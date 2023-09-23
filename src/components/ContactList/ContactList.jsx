@@ -1,25 +1,34 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import { StyledBtn, StyledItem, StyledList } from './ContactList.styled';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectContacts, selectFilter } from 'redux/selectors';
+import { deleteContact } from 'redux/contactsSlice';
 
-const ContactList = ({ contacts, deleteContact }) => {
+const ContactList = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(selectContacts);
+  const filter = useSelector(selectFilter);
+
+  const filterData = (data, filter) => {
+    return data?.filter(item =>
+      item.name.toLowerCase().includes(filter.toLowerCase())
+    );
+  };
+  const filteredData = filterData(contacts, filter);
+
   return (
     <>
       <StyledList>
-        {contacts.map(cont => (
+        {filteredData?.map(cont => (
           <StyledItem key={cont.id} id={cont.id}>
             {cont.name}: {cont.number}
-            <StyledBtn onClick={() => deleteContact(cont.id)}>Delete</StyledBtn>
+            <StyledBtn onClick={() => dispatch(deleteContact(cont.id))}>
+              Delete
+            </StyledBtn>
           </StyledItem>
         ))}
       </StyledList>
     </>
   );
-};
-
-ContactList.propTypes = {
-  contacts: PropTypes.array.isRequired,
-  deleteContact: PropTypes.func.isRequired,
 };
 
 export default ContactList;

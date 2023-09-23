@@ -1,21 +1,38 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
+import { nanoid } from 'nanoid';
 import { StyledButton, StyledForm, StyledLabel } from './ContactForm.styled';
+import { selectContacts } from 'redux/selectors';
+import { addContact } from 'redux/contactsSlice';
 
-const ContactForm = ({ updateContact }) => {
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
+const ContactForm = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(selectContacts);
 
   const onSubmit = e => {
     e.preventDefault();
+    const form = e.currentTarget;
+    const name = form.elements.name.value;
+    const number = form.elements.number.value;
 
     if (name === '') {
-      e.currentTarget.reset();
+      form.reset();
       return;
     }
-
-    updateContact(name, number);
-    e.currentTarget.reset();
+    const contact = {
+      id: nanoid(),
+      name,
+      number,
+    };
+    const contExist = contacts.find(
+      cont =>
+        cont.name.toLowerCase() === name.toLowerCase() || cont.number === number
+    );
+    if (contExist) {
+      alert(`${name} is already in contacts`);
+      return;
+    }
+    dispatch(addContact(contact));
+    form.reset();
   };
 
   return (
@@ -25,30 +42,22 @@ const ContactForm = ({ updateContact }) => {
       <input
         type="text"
         name="name"
-        value={name}
         id="name"
         pattern="^[a-zA-Zа-яА-Я]+((['-][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
         title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
         required
-        onChange={e => setName(e.target.value)}
       />
       <StyledLabel htmlFor="number">Number</StyledLabel>
       <input
         type="tel"
         name="number"
-        value={number}
         id="number"
         title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
         required
-        onChange={e => setNumber(e.target.value)}
       />
       <StyledButton type="submit">Add contact</StyledButton>
     </StyledForm>
   );
-};
-
-ContactForm.propTypes = {
-  onFormInput: PropTypes.func,
 };
 
 export default ContactForm;
